@@ -18,5 +18,10 @@
   "recommends": {
     "spatial_gui": "=1.9.1",
     "yet_another_config_lib_v3": ">=3.6.6+1.20.1-fabric"
+  },
+  "entrypoints": {
+    "main": [
+      "mcaxolotl.spatialguiextras.Extras"
+    ]
   }
 }
