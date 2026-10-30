@@ -1,0 +1,37 @@
+dependencies {
+    testRuntimeOnly 'org.lwjgl:lwjgl:3.3.1:natives-linux'
+    testRuntimeOnly 'org.lwjgl:lwjgl-glfw:3.3.1:natives-linux'
+    testRuntimeOnly 'org.lwjgl:lwjgl-opengl:3.3.1:natives-linux'
+}
+
+def checks = [
+    coreTest: 'mcaxolotl.spatialguiextras.CoreTests',
+    securityTest: 'mcaxolotl.spatialguiextras.SecurityTests',
+    orientationTest: 'mcaxolotl.spatialguiextras.OrientationTests',
+    gpuTest: 'mcaxolotl.spatialguiextras.GpuTests',
+    configurationTest: 'mcaxolotl.spatialguiextras.ConfigurationTests',
+    panelPoseTest: 'mcaxolotl.spatialguiextras.share.PanelPoseTests',
+    configScreenTest: 'mcaxolotl.spatialguiextras.config.ConfigScreenTests',
+    localizationTest: 'mcaxolotl.spatialguiextras.LocalizationTests',
+    worldPoseTest: 'mcaxolotl.spatialguiextras.share.WorldPoseTests',
+    interactionTest: 'mcaxolotl.spatialguiextras.interaction.InteractionTests'
+]
+
+checks.each { taskName, entrypoint ->
+    tasks.register(taskName, JavaExec) {
+        dependsOn tasks.named('testClasses')
+        classpath = sourceSets.test.runtimeClasspath
+        mainClass = entrypoint
+        workingDir = layout.buildDirectory.dir("test-runtime/${taskName}").get().asFile
+        doFirst { workingDir.mkdirs() }
+        if (taskName == 'gpuTest') {
+            onlyIf {
+                System.getenv('DISPLAY') || providers.gradleProperty('gpuTests')
+                        .getOrElse('false').toBoolean()
+            }
+        }
+    }
+}
+
+tasks.named('test') { enabled = false }
+tasks.named('check') { dependsOn checks.keySet().collect { tasks.named(it) } }
