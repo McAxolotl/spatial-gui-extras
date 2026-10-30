@@ -1,0 +1,23 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "mcaxolotl.spatialguiextras.mixin",
+  "plugin": "mcaxolotl.spatialguiextras.ExtrasMixinPlugin",
+  "compatibilityLevel": "JAVA_17",
+  "client": [
+    "ShareInventoryAccess",
+    "SharedAvatarApplyMixin",
+    "SharedAvatarCaptureMixin",
+    "FrameMixin",
+    "PanelPerspectiveMixin",
+    "PanelGeometryMixin",
+    "PanelFollowMixin",
+    "HeldItemMixin",
+    "ScreenProjectionAccess",
+    "ItemLightingAccess",
+    "CylinderInputMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

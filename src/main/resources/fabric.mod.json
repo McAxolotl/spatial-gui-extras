@@ -9,6 +9,23 @@
   ],
   "license": "MIT",
   "environment": "*",
+  "entrypoints": {
+    "main": [
+      "mcaxolotl.spatialguiextras.Extras"
+    ],
+    "client": [
+      "mcaxolotl.spatialguiextras.ExtrasClient"
+    ],
+    "modmenu": [
+      "mcaxolotl.spatialguiextras.config.ModMenuIntegration"
+    ]
+  },
+  "mixins": [
+    {
+      "config": "spatial_gui_extras.mixins.json",
+      "environment": "client"
+    }
+  ],
   "depends": {
     "fabricloader": ">=0.18.4",
     "minecraft": "=1.20.1",
@@ -18,10 +35,5 @@
   "recommends": {
     "spatial_gui": "=1.9.1",
     "yet_another_config_lib_v3": ">=3.6.6+1.20.1-fabric"
-  },
-  "entrypoints": {
-    "main": [
-      "mcaxolotl.spatialguiextras.Extras"
-    ]
   }
 }
