@@ -1,0 +1,55 @@
+ext.intermediaryMappings = {
+    def output = layout.projectDirectory.file('.gradle/mappings/intermediary-named.jar').asFile
+    output.parentFile.mkdirs()
+    def input = project.buildscript.configurations.classpath.files.find {
+        it.name == 'intermediary-1.20.1-v2.jar'
+    }
+    new java.util.zip.ZipFile(input).withCloseable { zip ->
+        def rows = zip.getInputStream(zip.getEntry('mappings/mappings.tiny'))
+                .withCloseable { it.getText('UTF-8').readLines() }
+        def content = rows.withIndex().collect { row, index ->
+            index == 0 ? row + '\tnamed' : row + '\t' + row.substring(row.lastIndexOf('\t') + 1)
+        }.join('\n') + '\n'
+        def bytes = content.getBytes('UTF-8')
+        boolean current = false
+        if (output.exists()) {
+            new java.util.zip.ZipFile(output).withCloseable { previous ->
+                current = previous.getInputStream(previous.getEntry('mappings/mappings.tiny'))
+                        .withCloseable { java.util.Arrays.equals(it.bytes, bytes) }
+            }
+        }
+        if (!current) {
+            output.withOutputStream { stream ->
+                def archive = new java.util.zip.ZipOutputStream(stream)
+                archive.putNextEntry(new java.util.zip.ZipEntry('mappings/mappings.tiny'))
+                archive.write(bytes)
+                archive.closeEntry()
+                archive.close()
+            }
+        }
+    }
+    return files(output)
+}
+
+ext.modrinthModules = { String filename ->
+    def bundle = project.buildscript.configurations.classpath.files.find { it.name == filename }
+    if (bundle == null) throw new GradleException("Missing Maven bundle: ${filename}")
+    def modules = []
+    new java.util.zip.ZipFile(bundle).withCloseable { zip ->
+        zip.entries().findAll {
+            it.name.startsWith('META-INF/jars/') && it.name.endsWith('.jar')
+                    && !it.name.contains('mixinextras-fabric')
+        }.each { entry ->
+            def bytes = zip.getInputStream(entry).withCloseable { it.bytes }
+            def hash = java.security.MessageDigest.getInstance('SHA-256').digest(bytes).encodeHex()
+            def output = layout.projectDirectory.file(
+                    ".gradle/modrinth/${hash}/${entry.name.tokenize('/').last()}").asFile
+            if (!output.exists() || !java.util.Arrays.equals(output.bytes, bytes)) {
+                output.parentFile.mkdirs()
+                output.bytes = bytes
+            }
+            modules.add(output)
+        }
+    }
+    return files(modules)
+}
